@@ -18,27 +18,50 @@ class ServerThread(val socket: Socket) extends Runnable {
         received.toUpperCase match {
           case "DIR" => sendDirectories()
           case "PWD" => sendPWD()
+          case "CD" => changeDirectory()
           case _ => sendUnknown()
         }
-        println(received)
       }
     } catch {
-      case s: SocketException => println("Socket closed")
+      case s: SocketException => {
+        socket.close()
+        println("Socket closed")
+      }
     }
     println("End of session")
   }
 
-
   def sendDirectories(): Unit = {
     val output = new File(currentWorkingDirectory).listFiles().map(_.getName).toList.mkString("\n")
     socket.getOutputStream.write(output.getBytes, 0, output.length)
-    socket.getOutputStream.flush
+    socket.getOutputStream.flush()
   }
+
 
   def sendPWD(): Unit = {
     val output = currentWorkingDirectory
     socket.getOutputStream.write(output.getBytes, 0, output.length)
     socket.getOutputStream.flush()
+  }
+
+  def changeDirectory(): Unit = {
+
+    val buffer = new Array[Byte](socket.getInputStream.available())
+    socket.getInputStream.read(buffer, 0, socket.getInputStream.available())
+
+    val path = new String(buffer)
+    var tempWorkingDirectory = currentWorkingDirectory.replaceAll("\\\\", "/")
+
+    path match {
+      case ".." => tempWorkingDirectory = tempWorkingDirectory.dropRight(tempWorkingDirectory.length - tempWorkingDirectory.lastIndexOf("/"))
+      case _ => tempWorkingDirectory += "/" + path.takeWhile(x => x.isLetter)
+    }
+
+    if (new File(tempWorkingDirectory).isDirectory) currentWorkingDirectory = tempWorkingDirectory
+    else {
+      val msg = "Error, directory doesn't exists"
+      socket.getOutputStream.write(msg.getBytes(), 0, msg.length)
+    }
   }
 
   def sendUnknown(): Unit = {

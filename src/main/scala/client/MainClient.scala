@@ -5,10 +5,6 @@ import java.net.Socket
 
 import scala.io.StdIn._
 
-
-/**
-  * Created by Artur on 19.09.2017.
-  */
 object MainClient extends App {
 
   val socket = new Socket("localhost", 9090)
@@ -17,9 +13,18 @@ object MainClient extends App {
 
   while(true) {
     var line = readLine()
-    println(s"Sending $line")
-    line += "\n"
-    outputStream.write(line.getBytes(), 0, line.length)
-    outputStream.flush()
+    if (line.startsWith("cd")) {
+      val command = line.split(" ").head + "\n"
+      val path = line.split(" ").tail.head
+      outputStream.write(command.getBytes(), 0, command.length)
+      outputStream.flush()
+      outputStream.write(path.getBytes(), 0, path.length)
+      outputStream.flush()
+    } else {
+      println(s"Sending $line")
+      line += "\n"
+      outputStream.write(line.getBytes(), 0, line.length)
+      outputStream.flush()
+    }
   }
 }
