@@ -12,19 +12,19 @@ object MainClient extends App {
   new Thread(new ClientThread(socket)).start()
 
   while(true) {
-    var line = readLine()
+
+    val line = readLine()
+
     if (line.startsWith("cd")) {
-      val command = line.split(" ").head + "\n"
-      val path = line.split(" ").tail.head
-      outputStream.write(command.getBytes(), 0, command.length)
-      outputStream.flush()
-      outputStream.write(path.getBytes(), 0, path.length)
-      outputStream.flush()
+      sendMessage(line.split(" ").head + "\n")
+      sendMessage(line.split(" ").tail.head)
     } else {
-      println(s"Sending $line")
-      line += "\n"
-      outputStream.write(line.getBytes(), 0, line.length)
-      outputStream.flush()
+      sendMessage(line + "\n")
     }
+  }
+
+  def sendMessage(line: String): Unit = {
+    outputStream.write(line.getBytes(), 0, line.length)
+    outputStream.flush()
   }
 }

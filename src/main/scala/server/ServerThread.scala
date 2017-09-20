@@ -10,6 +10,7 @@ class ServerThread(val socket: Socket) extends Runnable {
 
   private var currentWorkingDirectory = System.getProperty("user.home")
 
+
   override def run(): Unit = {
 
     try {
@@ -19,6 +20,9 @@ class ServerThread(val socket: Socket) extends Runnable {
           case "DIR" => sendDirectories()
           case "PWD" => sendPWD()
           case "CD" => changeDirectory()
+          case "GET" => sendFile()
+          case "PUT" => saveFile()
+          case "RM" => removeFile()
           case _ => sendUnknown()
         }
       }
@@ -31,19 +35,22 @@ class ServerThread(val socket: Socket) extends Runnable {
     println("End of session")
   }
 
+
+  // Directories
   def sendDirectories(): Unit = {
     val output = new File(currentWorkingDirectory).listFiles().map(_.getName).toList.mkString("\n")
     socket.getOutputStream.write(output.getBytes, 0, output.length)
     socket.getOutputStream.flush()
   }
 
-
+  // Print working directory
   def sendPWD(): Unit = {
     val output = currentWorkingDirectory
     socket.getOutputStream.write(output.getBytes, 0, output.length)
     socket.getOutputStream.flush()
   }
 
+  // Change directory
   def changeDirectory(): Unit = {
 
     val buffer = new Array[Byte](socket.getInputStream.available())
@@ -64,7 +71,15 @@ class ServerThread(val socket: Socket) extends Runnable {
     }
   }
 
+  // If something goes wrong
   def sendUnknown(): Unit = {
-
+    val msg = "Unknown command, try again"
+    socket.getOutputStream.write(msg.getBytes(), 0, msg.length)
   }
+  
+  def saveFile(): Unit = ???
+
+  def sendFile(): Unit = ???
+
+  def removeFile(): Unit = ???
 }
