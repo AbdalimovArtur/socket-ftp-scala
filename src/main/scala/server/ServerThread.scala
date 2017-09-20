@@ -2,13 +2,14 @@ package server
 
 import java.io.{DataInputStream, DataOutputStream, File}
 import java.net.{Socket, SocketException}
+import java.nio.file.{Files, Paths}
 
 /**
   * Created by Artur on 19.09.2017.
   */
 class ServerThread(val socket: Socket) extends Runnable {
 
-  private var currentWorkingDirectory = System.getProperty("user.home")
+  private var currentWorkingDirectory = System.getProperty("user.home").replaceAll("\\\\", "/")
 
 
   override def run(): Unit = {
@@ -76,10 +77,24 @@ class ServerThread(val socket: Socket) extends Runnable {
     val msg = "Unknown command, try again"
     socket.getOutputStream.write(msg.getBytes(), 0, msg.length)
   }
-  
+
   def saveFile(): Unit = ???
 
-  def sendFile(): Unit = ???
+  def sendFile(): Unit = {
+
+    val buffer = new Array[Byte](socket.getInputStream.available())
+    socket.getInputStream.read(buffer, 0, socket.getInputStream.available())
+
+    val fileName = new String(buffer)
+    val pathToFile = currentWorkingDirectory + "/" + fileName
+    println(fileName)
+    println(pathToFile)
+    val file = Files.readAllBytes(Paths.get(pathToFile))
+    val header = s"FILE $fileName ${file.size}"
+    socket.getOutputStream.write(header.getBytes(), 0, header.length)
+    socket.getOutputStream.flush()
+    socket.getOutputStream.write(file, 0, file.length)
+  }
 
   def removeFile(): Unit = ???
 }

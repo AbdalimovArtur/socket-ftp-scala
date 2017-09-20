@@ -16,9 +16,11 @@ object MainClient extends App {
     val line = readLine()
 
     if (line.startsWith("cd")) {
-      sendMessage(line.split(" ").head + "\n")
-      sendMessage(line.split(" ").tail.head)
-    } else {
+      sendCommand(line)
+    } else if (line.startsWith("get")) {
+      sendCommand(line)
+    }
+    else {
       sendMessage(line + "\n")
     }
   }
@@ -26,5 +28,10 @@ object MainClient extends App {
   def sendMessage(line: String): Unit = {
     outputStream.write(line.getBytes(), 0, line.length)
     outputStream.flush()
+  }
+
+  def sendCommand(line: String): Unit = {
+    sendMessage(line.split(" ").head + "\n")
+    sendMessage(line.split(" ").tail.head)
   }
 }
