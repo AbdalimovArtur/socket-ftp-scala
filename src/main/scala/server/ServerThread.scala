@@ -1,6 +1,6 @@
 package server
 
-import java.io.{DataInputStream, DataOutputStream, File}
+import java.io.{DataInputStream, DataOutputStream, File, FileOutputStream}
 import java.net.{Socket, SocketException}
 import java.nio.file.{Files, Paths}
 
@@ -17,6 +17,7 @@ class ServerThread(val socket: Socket) extends Runnable {
     try {
       while (socket.isConnected) {
         val received = new String(Stream.continually(socket.getInputStream.read).takeWhile(_ != '\n').map(_.toByte).toArray)
+        println(received)
         received.toUpperCase match {
           case "DIR" => sendDirectories()
           case "PWD" => sendPWD()
@@ -78,7 +79,31 @@ class ServerThread(val socket: Socket) extends Runnable {
     socket.getOutputStream.write(msg.getBytes(), 0, msg.length)
   }
 
-  def saveFile(): Unit = ???
+  def saveFile(): Unit = {
+
+    val buffer = new Array[Byte](socket.getInputStream.available())
+    socket.getInputStream.read(buffer, 0, socket.getInputStream.available())
+
+    val header = new String(buffer)
+    println(header)
+    val fileName = header.split(" ").tail.head
+    val fileSize = Integer.getInteger(header.split(" ").tail.tail.head)
+
+
+    val fileOutputStream = new FileOutputStream(s"${System.getProperty("user.home")}\\$fileName")
+    var read = 0
+    println(fileSize)
+
+    while(socket.getInputStream.available() > 0 && read != fileSize) {
+      val available = socket.getInputStream.available()
+      val fileBuffer = new Array[Byte](available)
+      socket.getInputStream.read(fileBuffer)
+      fileOutputStream.write(fileBuffer)
+      fileOutputStream.flush()
+      read += available
+    }
+    fileOutputStream.close()
+  }
 
   def sendFile(): Unit = {
 

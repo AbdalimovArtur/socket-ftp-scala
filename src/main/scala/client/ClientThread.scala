@@ -19,9 +19,11 @@ class ClientThread(val socket: Socket) extends Runnable {
       if (inputStream.available() > 0) {
         inputStream.read(buffer)
         val received = new String(buffer, "utf-8")
+
+        // BIKE: Need fixing
         if (received.startsWith("FILE")) {
           println(received)
-          val fileOutputStream = new FileOutputStream("C:\\Users\\Artur\\Desktop\\photo.jpg")
+          val fileOutputStream = new FileOutputStream(s"C:\\Users\\Artur\\Desktop\\${received.split(" ").tail.head}")
           var read = 0
           val size = Integer.getInteger(received.split(" ").tail.tail.head)
           println(size)
@@ -35,6 +37,8 @@ class ClientThread(val socket: Socket) extends Runnable {
           }
           fileOutputStream.close()
         }
+        // END OF BIKE
+
         println(new String(buffer, "utf-8"))
       }
     }
