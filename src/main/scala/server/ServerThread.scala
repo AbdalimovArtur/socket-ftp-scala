@@ -137,6 +137,7 @@ class ServerThread(val socket: Socket) extends Runnable {
       println(header)
       socket.getOutputStream.write(header.getBytes(), 0, header.length)
       socket.getOutputStream.flush()
+      Thread.sleep(1000)
       socket.getOutputStream.write(file, 0, file.length)
       socket.getOutputStream.flush()
     } else {
