@@ -4,9 +4,6 @@ import java.io.{DataInputStream, DataOutputStream, File, FileOutputStream}
 import java.net.Socket
 import java.nio.file.{Files, Paths}
 
-/**
-  * Created by Artur on 20.09.2017.
-  */
 class ClientThread(val socket: Socket) extends Runnable {
 
 
@@ -24,8 +21,10 @@ class ClientThread(val socket: Socket) extends Runnable {
 
         // BIKE: Need fixing
         if (received.startsWith("FILE")) {
-//          println(received)
-          val fileOutputStream = new FileOutputStream(s"C:\\Users\\Artur\\Desktop\\${received.split(" ").tail.head}")
+
+          val homePath = System.getProperty("user.home") + "/Downloads/"
+
+          val fileOutputStream = new FileOutputStream(homePath + received.split(" ").tail.head)
           var alreadyRead = 0
           val receivingFileSize = received.split(" ").tail.tail.head.trim.toInt
           println(s"receiving : $receivingFileSize bytes")
